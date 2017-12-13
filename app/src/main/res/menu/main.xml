@@ -7,4 +7,9 @@
         app:showAsAction="always"
         android:title="@string/action_add"
         android:icon="@drawable/ic_action_add" />
+
+    <item
+        android:id="@+id/action_option"
+        app:showAsAction="never"
+        android:title="Option"/>
 </menu>

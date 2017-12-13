@@ -1,5 +1,8 @@
 <resources>
-    <string name="app_name">LearnBlog</string>
+    <string name="app_name">Blog App</string>
 
     <string name="action_add">Add new post</string>
+
+    <string name="image_placeholder">Click here to add image</string>
+    <string name="btn_submit_post">Post</string>
 </resources>

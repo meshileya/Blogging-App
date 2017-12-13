@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /*[End] View initialization + [onClick Listener]*/
 
         /*[Start][Fire-base] Initialization*/
-        mDbReference = FirebaseDatabase.getInstance().getReference();
+        mDbReference = FirebaseDatabase.getInstance().getReference().child("Blog");
         mStorageReference = FirebaseStorage.getInstance().getReference();
         /*[Start][Fire-base] Initialization*/
 
@@ -145,8 +145,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private  void startPosting(){
-        String postTitle = mPostTitle.getText().toString().trim();
-        String postBody = mPostBody.getText().toString().trim();
+        final String postTitle = mPostTitle.getText().toString().trim();
+        final String postBody = mPostBody.getText().toString().trim();
 
         mProgressDialog.setTitle(R.string.app_name);
         mProgressDialog.setMessage("Posting");
@@ -160,6 +160,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri downloadUri = taskSnapshot.getDownloadUrl();
+
+                    /*[push()] generates a unique key*/
+                    DatabaseReference newPost = mDbReference.push();
+
+                    // Adding content into the unique key generated in the database
+                    newPost.child("Image_link").setValue(downloadUri.toString());
+                    newPost.child("Title").setValue(postTitle);
+                    newPost.child("Post").setValue(postBody);
+
                     mProgressDialog.dismiss();
                     Toast.makeText(MainActivity.this, "Posting Successful", Toast.LENGTH_SHORT).show();
                 }

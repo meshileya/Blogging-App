@@ -2,9 +2,7 @@ package com.example.benjamin.learnblog;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,11 +25,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.IOException;
+public class NewPostActivity extends AppCompatActivity implements View.OnClickListener{
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = NewPostActivity.class.getSimpleName();
     private static final String REQUIRED = "Required";
 
     /*[Start] View Declarations*/
@@ -53,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_new_post);
 
         /*[start] View initialization + [onClick Listener]*/
         imageButton = findViewById(R.id.ibtn_image_placeholder);
@@ -78,15 +74,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.all_post, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if(id == R.id.action_add){
-            startActivity(new Intent(MainActivity.this, PostActivity.class));
+        if(id == R.id.action_all_post){
+            startActivity(new Intent(NewPostActivity.this, AllPostActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }
@@ -165,18 +161,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     DatabaseReference newPost = mDbReference.push();
 
                     // Adding content into the unique key generated in the database
-                    newPost.child("Image_link").setValue(downloadUri.toString());
-                    newPost.child("Title").setValue(postTitle);
-                    newPost.child("Post").setValue(postBody);
-
+                    newPost.child("image").setValue(downloadUri.toString());
+                    newPost.child("title").setValue(postTitle);
+                    newPost.child("content").setValue(postBody);
                     mProgressDialog.dismiss();
-                    Toast.makeText(MainActivity.this, "Posting Successful", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(NewPostActivity.this, "Posting Successful", Toast.LENGTH_SHORT).show();
+
+                    startActivity(new Intent(NewPostActivity.this, AllPostActivity.class));
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     mProgressDialog.dismiss();
-                    Toast.makeText(MainActivity.this, "Posting Failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(NewPostActivity.this, "Posting Failed", Toast.LENGTH_SHORT).show();
                 }
             });
         }else{

@@ -3,13 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/action_add"
+        android:id="@+id/action_add_post"
         app:showAsAction="always"
         android:title="@string/action_add"
         android:icon="@drawable/ic_action_add" />
-
-    <item
-        android:id="@+id/action_option"
-        app:showAsAction="never"
-        android:title="Option"/>
 </menu>

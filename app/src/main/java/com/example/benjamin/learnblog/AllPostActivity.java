@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,26 +14,29 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.firebase.ui.database.FirebaseListAdapter;
-import com.firebase.ui.database.FirebaseListOptions;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 /**
  * Created by Benjamin on 12/13/2017.
  */
 
-public class AllPostActivity extends AppCompatActivity {
+public class AllPostActivity extends BaseActivity {
 
     private RecyclerView mRecyclerView;
     private DatabaseReference mDbReference;
 
-    public AllPostActivity() {
-    }
+    private FirebaseAuth mAuth;
+
+    FirebaseRecyclerAdapter<Blog, BlogViewHolder> fireBaseRecyclerAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,28 +44,30 @@ public class AllPostActivity extends AppCompatActivity {
         setContentView(R.layout.activity_all_post);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        showProgressDialog();
+        mAuth = FirebaseAuth.getInstance();
+
         mRecyclerView = findViewById(R.id.rv_all_post);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         mDbReference = FirebaseDatabase.getInstance().getReference().child("Blog");
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
+        mDbReference.keepSynced(true);
+        /**
+         * [starts]
+         * Retrieve data from the database using Fire base UI*/
         Query postQuery = FirebaseDatabase.getInstance().getReference().child("Blog").limitToFirst(50);
 
         FirebaseRecyclerOptions<Blog> options = new FirebaseRecyclerOptions.Builder<Blog>()
                 .setQuery(postQuery, Blog.class)
                 .build();
 
-        FirebaseRecyclerAdapter<Blog, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Blog, BlogViewHolder>(options) {
+        fireBaseRecyclerAdapter = new FirebaseRecyclerAdapter<Blog, BlogViewHolder>(options) {
             @Override
             public BlogViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                 View view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.post_item, parent, false);
+                hideProgressDialog();
                 return new BlogViewHolder(view);
             }
 
@@ -74,7 +78,31 @@ public class AllPostActivity extends AppCompatActivity {
                 holder.setImage(getApplicationContext(), model.getImage());
             }
         };
-        firebaseRecyclerAdapter.startListening();
+        mRecyclerView.setAdapter(fireBaseRecyclerAdapter);
+        /**
+         * [Ends]
+         * Retrieve data from the database using Fire base UI*/
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        fireBaseRecyclerAdapter.startListening();
+        hideProgressDialog();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        fireBaseRecyclerAdapter.stopListening();
+        hideProgressDialog();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fireBaseRecyclerAdapter.startListening();
+        showProgressDialog();
     }
 
     @Override
@@ -90,6 +118,9 @@ public class AllPostActivity extends AppCompatActivity {
         switch (id){
             case R.id.action_add_post:
                 startActivity(new Intent(AllPostActivity.this, NewPostActivity.class));
+                break;
+            case R.id.sign_out:
+                mAuth.signOut();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -109,9 +140,19 @@ public class AllPostActivity extends AppCompatActivity {
             mView = itemView;
         }
 
-        public void setImage(Context context, String image){
+        public void setImage(final Context context, final String image){
             mPostImage = itemView.findViewById(R.id.iv_post_image);
-            Picasso.with(context).load(image).into(mPostImage);
+            Picasso.with(context).load(image).networkPolicy(NetworkPolicy.OFFLINE).into(mPostImage, new Callback() {
+                @Override
+                public void onSuccess() {
+                    /*Do nothing*/
+                }
+
+                @Override
+                public void onError() {
+                    Picasso.with(context).load(image).into(mPostImage);
+                }
+            });
         }
         public void setTitle(String title){
             mPostTitle = itemView.findViewById(R.id.tv_post_title);

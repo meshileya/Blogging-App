@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,9 +19,12 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -32,7 +36,9 @@ import com.squareup.picasso.Picasso;
 public class AllPostActivity extends BaseActivity {
 
     private RecyclerView mRecyclerView;
+
     private DatabaseReference mDbReference;
+    private DatabaseReference mDatabaseUsers;
 
     private FirebaseAuth mAuth;
 
@@ -44,7 +50,6 @@ public class AllPostActivity extends BaseActivity {
         setContentView(R.layout.activity_all_post);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        showProgressDialog();
         mAuth = FirebaseAuth.getInstance();
 
         mRecyclerView = findViewById(R.id.rv_all_post);
@@ -52,7 +57,13 @@ public class AllPostActivity extends BaseActivity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         mDbReference = FirebaseDatabase.getInstance().getReference().child("Blog");
+        mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
+
+        mDatabaseUsers.keepSynced(true);
         mDbReference.keepSynced(true);
+
+        checkUserExist();
+
         /**
          * [starts]
          * Retrieve data from the database using Fire base UI*/
@@ -84,9 +95,32 @@ public class AllPostActivity extends BaseActivity {
          * Retrieve data from the database using Fire base UI*/
     }
 
+    private void checkUserExist(){
+        if (mAuth.getCurrentUser() != null){
+            final String user_id = mAuth.getCurrentUser().getUid();
+
+            mDatabaseUsers.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.hasChild(user_id)){
+                        Intent setupAccount = new Intent(AllPostActivity.this, SetupAccount.class);
+                        setupAccount.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(setupAccount);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
+        checkUserExist();
         fireBaseRecyclerAdapter.startListening();
         hideProgressDialog();
     }
@@ -121,6 +155,9 @@ public class AllPostActivity extends BaseActivity {
                 break;
             case R.id.sign_out:
                 mAuth.signOut();
+                Intent signOutIntent = new Intent(AllPostActivity.this, MainActivity.class);
+                signOutIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(signOutIntent);
                 break;
         }
         return super.onOptionsItemSelected(item);

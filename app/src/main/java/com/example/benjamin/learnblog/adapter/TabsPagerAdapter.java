@@ -4,8 +4,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.example.benjamin.learnblog.Fragments.SignInFragment;
-import com.example.benjamin.learnblog.Fragments.SignUpFragment;
+import com.example.benjamin.learnblog.Fragments.SignInFragments;
+import com.example.benjamin.learnblog.Fragments.SignUpFragments;
 
 /**
  * Created by Benjamin on 05-Jan-18.
@@ -22,10 +22,10 @@ public class TabsPagerAdapter extends FragmentPagerAdapter{
         switch(pages){
             case 0:
                 // Sign in activity
-                return new SignInFragment();
+                return new SignInFragments();
             case 1:
                 // Sign Up activity
-                return new SignUpFragment();
+                return new SignUpFragments();
         }
         return null;
     }

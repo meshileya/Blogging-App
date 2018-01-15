@@ -5,15 +5,16 @@ package com.example.benjamin.learnblog;
  */
 
 public class Blog {
-    public String image, title, content;
+    public String image, title, content, username;
 
     public Blog() {
     }
 
-    public Blog(String image, String title, String content) {
+    public Blog(String image, String title, String content, String username) {
         this.image = image;
         this.title = title;
         this.content = content;
+        this.username = username;
     }
 
     public String getImage() {
@@ -38,5 +39,13 @@ public class Blog {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

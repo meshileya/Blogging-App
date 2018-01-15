@@ -163,7 +163,7 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
                         public void onFailure(@NonNull Exception e) {
                             hideProgressDialog();
                             Log.e(TAG, "Failure: Sign in Failed" + e.getMessage());
-                            showSnackBar(rootView.findViewById(R.id.cl_snack_bar), "Sign in failed", Snackbar.LENGTH_LONG);
+                            showSnackBar(rootView.findViewById(R.id.cl_snack_bar), e.getMessage(), Snackbar.LENGTH_INDEFINITE);
                         }
                     });
         }else{
@@ -191,7 +191,8 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    showSnackBar(rootView.findViewById(R.id.cl_snack_bar), "Log in failed", Snackbar.LENGTH_SHORT);
+                    Log.d(TAG, "Log in failed: " + databaseError.getMessage());
+                    showSnackBar(rootView.findViewById(R.id.cl_snack_bar), "Log in failed" + databaseError.getMessage(), Snackbar.LENGTH_SHORT);
                 }
             });
         }
@@ -242,11 +243,10 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
                             updateUi(user);
                         }else{
                             Log.w(TAG, "signInWithCredentials:failure", task.getException());
-                            showSnackBar(rootView.findViewById(R.id.cl_snack_bar), "Auth with google failed", Snackbar.LENGTH_SHORT);
-                            mProgressDialog.dismiss();
+                            showSnackBar(rootView.findViewById(R.id.cl_snack_bar), "Auth with google failed" + task.getException(), Snackbar.LENGTH_SHORT);
                             checkUserExist();
+                            mProgressDialog.dismiss();
                         }
-                        mProgressDialog.dismiss();
                     }
                 });
     }

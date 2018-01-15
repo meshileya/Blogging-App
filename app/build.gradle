@@ -31,8 +31,10 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:26.1.0'
     compile 'com.android.support:cardview-v7:26.1.0'
 
+    /*[Some third party library]*/
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.theartofdev.edmodo:android-image-cropper:2.6.+'
 
     /*Fire-base Libraries*/
     implementation 'com.google.firebase:firebase-database:11.6.2'

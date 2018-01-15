@@ -5,8 +5,10 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import com.example.benjamin.learnblog.AllPostActivity;
 import com.example.benjamin.learnblog.BaseActivity;
 import com.example.benjamin.learnblog.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -85,6 +88,13 @@ public class SignUpFragments extends BaseActivity.BaseFragment implements View.O
                         mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(mainIntent);
                     }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    hideProgressDialog();
+                    Log.e(TAG, "Failure: Sign up Failed" + e.getMessage());
+                    showSnackBar(rootView.findViewById(R.id.cl_snack_bar), e.getMessage(), Snackbar.LENGTH_INDEFINITE);
                 }
             });
         }

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,13 +11,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,8 +38,10 @@ public class AllPostActivity extends BaseActivity {
 
     private DatabaseReference mDbReference;
     private DatabaseReference mDatabaseUsers;
+    private DatabaseReference mDbNodeLike;
 
     private FirebaseAuth mAuth;
+    private boolean mDoLikes;
 
     FirebaseRecyclerAdapter<Blog, BlogViewHolder> fireBaseRecyclerAdapter;
 
@@ -50,6 +51,7 @@ public class AllPostActivity extends BaseActivity {
         setContentView(R.layout.activity_all_post);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        mDoLikes = false;
         mAuth = FirebaseAuth.getInstance();
 
         mRecyclerView = findViewById(R.id.rv_all_post);
@@ -58,11 +60,11 @@ public class AllPostActivity extends BaseActivity {
 
         mDbReference = FirebaseDatabase.getInstance().getReference().child("Blog");
         mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
+        mDbNodeLike = FirebaseDatabase.getInstance().getReference().child("Likes");
 
         mDatabaseUsers.keepSynced(true);
+        mDbNodeLike.keepSynced(true);
         mDbReference.keepSynced(true);
-
-        checkUserExist();
 
         /**
          * [starts]
@@ -84,15 +86,59 @@ public class AllPostActivity extends BaseActivity {
 
             @Override
             protected void onBindViewHolder(BlogViewHolder holder, int position, Blog model) {
+                // Retrieve post key fot single post activity.
+                final String post_key = getRef(position).getKey();
+
                 holder.setTitle(model.getTitle());
                 holder.setContent(model.getContent());
                 holder.setImage(getApplicationContext(), model.getImage());
+                holder.setUsername("by " + model.getUsername());
+
+                holder.setLikeBtn(post_key);
+
+                holder.mView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent singlePostIntent = new Intent(AllPostActivity.this, SinglePostActivity.class);
+                        singlePostIntent.putExtra("POST_KEY", post_key);
+                        startActivity(singlePostIntent);
+                    }
+                });
+
+                holder.mBtnLike.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mDoLikes = true;
+                            mDbNodeLike.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if (mDoLikes){
+                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())){
+                                            mDbNodeLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                            mDoLikes = false;
+                                        }else {
+                                            mDbNodeLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("Default");
+
+                                            mDoLikes = false;
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+                    }
+                });
             }
         };
         mRecyclerView.setAdapter(fireBaseRecyclerAdapter);
         /**
          * [Ends]
          * Retrieve data from the database using Fire base UI*/
+        checkUserExist();
     }
 
     private void checkUserExist(){
@@ -120,7 +166,6 @@ public class AllPostActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        checkUserExist();
         fireBaseRecyclerAdapter.startListening();
         hideProgressDialog();
     }
@@ -136,7 +181,6 @@ public class AllPostActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         fireBaseRecyclerAdapter.startListening();
-        showProgressDialog();
     }
 
     @Override
@@ -168,6 +212,11 @@ public class AllPostActivity extends BaseActivity {
         private ImageView mPostImage;
         private TextView mPostTitle;
         private TextView mPostContent;
+        private TextView mPostOwner;
+
+        private ImageButton mBtnLike;
+        private DatabaseReference sDbNodeLikes;
+        private FirebaseAuth sNodeLikesAuth;
         /*[End] View declaration*/
 
         View mView;
@@ -175,6 +224,30 @@ public class AllPostActivity extends BaseActivity {
         public BlogViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
+            mBtnLike = mView.findViewById(R.id.btn_like);
+
+            sDbNodeLikes = FirebaseDatabase.getInstance().getReference().child("Likes");
+            sNodeLikesAuth = FirebaseAuth.getInstance();
+
+            sDbNodeLikes.keepSynced(true);
+        }
+
+        private void setLikeBtn(final String post_key){
+            // To enable real time database
+            sDbNodeLikes.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.child(post_key).hasChild(sNodeLikesAuth.getCurrentUser().getUid())){
+                        mBtnLike.setImageResource(R.drawable.ic_action_unlike);
+                    }else
+                        mBtnLike.setImageResource(R.drawable.ic_action_like);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
         }
 
         public void setImage(final Context context, final String image){
@@ -199,6 +272,10 @@ public class AllPostActivity extends BaseActivity {
         public void setContent(String content){
             mPostContent = itemView.findViewById(R.id.tv_post_content);
             mPostContent.setText(content);
+        }
+        public void setUsername(String username){
+            mPostOwner = itemView.findViewById(R.id.tv_username);
+            mPostOwner.setText(username);
         }
     }
 }

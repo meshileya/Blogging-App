@@ -17,10 +17,17 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -42,8 +49,13 @@ public class NewPostActivity extends AppCompatActivity implements View.OnClickLi
     private ProgressDialog mProgressDialog;
 
     /*[Start][Fire-base] Declaration*/
-    DatabaseReference mDbReference;
-    StorageReference mStorageReference;
+    private DatabaseReference mDbReference;
+    private StorageReference mStorageReference;
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser mCurrentUser;
+    private DatabaseReference mDbReferenceUsers;
+
     /*[Start][Fire-base] Declaration*/
 
     @Override
@@ -67,6 +79,11 @@ public class NewPostActivity extends AppCompatActivity implements View.OnClickLi
         /*[Start][Fire-base] Initialization*/
         mDbReference = FirebaseDatabase.getInstance().getReference().child("Blog");
         mStorageReference = FirebaseStorage.getInstance().getReference();
+
+        mAuth = FirebaseAuth.getInstance();
+        mCurrentUser = mAuth.getCurrentUser();
+
+        mDbReferenceUsers = FirebaseDatabase.getInstance().getReference().child("Users").child(mCurrentUser.getUid());
         /*[Start][Fire-base] Initialization*/
 
         mProgressDialog = new ProgressDialog(this);
@@ -100,7 +117,7 @@ public class NewPostActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    private void selectImage(){
+    public void selectImage(){
         // Set up intent to open a gallery
         Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
 
@@ -128,15 +145,6 @@ public class NewPostActivity extends AppCompatActivity implements View.OnClickLi
 
             imageButton.setImageURI(mImageUri);
             image_placeholderText.setVisibility(View.INVISIBLE);
-
-            /*try{
-                mImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                Log.d(TAG, String.valueOf(mImageBitmap));
-                imageButton.setImageBitmap(mImageBitmap);
-                image_placeholderText.setVisibility(View.INVISIBLE);
-            }catch (IOException e){
-                e.printStackTrace();
-            }*/
         }
     }
 
@@ -155,25 +163,45 @@ public class NewPostActivity extends AppCompatActivity implements View.OnClickLi
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Uri downloadUri = taskSnapshot.getDownloadUrl();
+                    final Uri downloadUri = taskSnapshot.getDownloadUrl();
 
                     /*[push()] generates a unique key*/
-                    DatabaseReference newPost = mDbReference.push();
+                    final DatabaseReference newPost = mDbReference.push();
 
-                    // Adding content into the unique key generated in the database
-                    newPost.child("image").setValue(downloadUri.toString());
-                    newPost.child("title").setValue(postTitle);
-                    newPost.child("content").setValue(postBody);
+                    mDbReferenceUsers.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            // Adding content into the unique key generated in the database
+                            newPost.child("image").setValue(downloadUri.toString());
+                            newPost.child("title").setValue(postTitle);
+                            newPost.child("content").setValue(postBody);
+                            newPost.child("uid").setValue(mCurrentUser.getUid());
+
+                            newPost.child("username").setValue(dataSnapshot.child("name").getValue())
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()){
+                                                startActivity(new Intent(NewPostActivity.this, AllPostActivity.class));
+                                            }
+                                        }
+                                    });
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.d(TAG, "Log in database error: " + databaseError.getMessage());
+                            Toast.makeText(NewPostActivity.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     mProgressDialog.dismiss();
-                    Toast.makeText(NewPostActivity.this, "Posting Successful", Toast.LENGTH_SHORT).show();
-
-                    startActivity(new Intent(NewPostActivity.this, AllPostActivity.class));
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     mProgressDialog.dismiss();
-                    Toast.makeText(NewPostActivity.this, "Posting Failed", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Posting failed: " + e.getMessage());
+                    Toast.makeText(NewPostActivity.this, "Posting Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }else{

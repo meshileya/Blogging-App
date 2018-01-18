@@ -2,6 +2,7 @@ package com.example.benjamin.learnblog;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,6 +29,8 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 /**
  * Created by Benjamin on 12/13/2017.
  */
@@ -43,13 +46,16 @@ public class AllPostActivity extends BaseActivity {
     private FirebaseAuth mAuth;
     private boolean mDoLikes;
 
+    /*private Uri xx;*/
+
     FirebaseRecyclerAdapter<Blog, BlogViewHolder> fireBaseRecyclerAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_post);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        showProgressDialog();
 
         mDoLikes = false;
         mAuth = FirebaseAuth.getInstance();
@@ -58,6 +64,7 @@ public class AllPostActivity extends BaseActivity {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        //[Initialize the fire base]
         mDbReference = FirebaseDatabase.getInstance().getReference().child("Blog");
         mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
         mDbNodeLike = FirebaseDatabase.getInstance().getReference().child("Likes");
@@ -69,7 +76,7 @@ public class AllPostActivity extends BaseActivity {
         /**
          * [starts]
          * Retrieve data from the database using Fire base UI*/
-        Query postQuery = FirebaseDatabase.getInstance().getReference().child("Blog").limitToFirst(50);
+        Query postQuery = FirebaseDatabase.getInstance().getReference().child("Blog");
 
         FirebaseRecyclerOptions<Blog> options = new FirebaseRecyclerOptions.Builder<Blog>()
                 .setQuery(postQuery, Blog.class)
@@ -92,7 +99,8 @@ public class AllPostActivity extends BaseActivity {
                 holder.setTitle(model.getTitle());
                 holder.setContent(model.getContent());
                 holder.setImage(getApplicationContext(), model.getImage());
-                holder.setUsername("by " + model.getUsername());
+                holder.setUsername(model.getUsername());
+                holder.setOwnerDp(getApplicationContext(), model.getOwnerDp());
 
                 holder.setLikeBtn(post_key);
 
@@ -139,6 +147,12 @@ public class AllPostActivity extends BaseActivity {
          * [Ends]
          * Retrieve data from the database using Fire base UI*/
         checkUserExist();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        moveTaskToBack(true);
     }
 
     private void checkUserExist(){
@@ -210,6 +224,7 @@ public class AllPostActivity extends BaseActivity {
     public static class BlogViewHolder extends RecyclerView.ViewHolder{
         /*[starts] View declaration*/
         private ImageView mPostImage;
+        private CircleImageView mProfileImage;
         private TextView mPostTitle;
         private TextView mPostContent;
         private TextView mPostOwner;
@@ -276,6 +291,21 @@ public class AllPostActivity extends BaseActivity {
         public void setUsername(String username){
             mPostOwner = itemView.findViewById(R.id.tv_username);
             mPostOwner.setText(username);
+        }
+
+        public void setOwnerDp(final Context context, final String ownerDp) {
+            mProfileImage = itemView.findViewById(R.id.profile_image);
+            Picasso.with(context).load(ownerDp).networkPolicy(NetworkPolicy.OFFLINE).into(mProfileImage, new Callback() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onError() {
+                    Picasso.with(context).load(ownerDp).into(mProfileImage);
+                }
+            });
         }
     }
 }

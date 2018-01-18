@@ -115,14 +115,17 @@ public class SetupAccount extends BaseActivity implements
         if (!TextUtils.isEmpty(name) && dpUri != null){
             mProgressDialog.setMessage("Finishing Setup...");
             mProgressDialog.show();
+            // Save the image filePath into Class [Storage_Reference]
+            /*This saves the image into fire_base storage*/
             StorageReference filePath = mStorageRef.child(dpUri.getLastPathSegment());
+            // Put the file path into the URI
             filePath.putFile(dpUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     String downloadUri = taskSnapshot.getDownloadUrl().toString();
 
                     mDatabaseUsers.child(user_id).child("name").setValue(name);
-                    mDatabaseUsers.child(user_id).child("image").setValue(downloadUri);
+                    mDatabaseUsers.child(user_id).child("propics").setValue(downloadUri);
 
                     hideProgressDialog();
                     Intent mainIntent = new Intent(SetupAccount.this, AllPostActivity.class);

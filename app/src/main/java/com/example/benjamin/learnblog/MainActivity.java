@@ -64,8 +64,18 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onTabSelected(android.support.v7.app.ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
+    public void onBackPressed() {
+        super.onBackPressed();
+        moveTaskToBack(true);
+    }
 
+    @Override
+    public void onTabSelected(android.support.v7.app.ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
+        /*
+        * On tab selected
+        * Show respected fragment view
+        * */
+        viewPager.setCurrentItem(tab.getPosition());
     }
 
     @Override

@@ -1,20 +1,22 @@
 package com.example.benjamin.learnblog;
 
+import android.net.Uri;
+
 /**
  * Created by Benjamin on 12/13/2017.
  */
 
 public class Blog {
-    public String image, title, content, username;
-
+    public String image, title, content, username, ownerDp;
     public Blog() {
     }
 
-    public Blog(String image, String title, String content, String username) {
+    public Blog(String image, String title, String content, String username, String ownerDp) {
         this.image = image;
         this.title = title;
         this.content = content;
         this.username = username;
+        this.ownerDp = ownerDp;
     }
 
     public String getImage() {
@@ -47,5 +49,13 @@ public class Blog {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getOwnerDp() {
+        return ownerDp;
+    }
+
+    public void setOwnerDp(String ownerDp) {
+        this.ownerDp = ownerDp;
     }
 }

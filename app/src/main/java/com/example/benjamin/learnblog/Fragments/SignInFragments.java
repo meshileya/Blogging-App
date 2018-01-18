@@ -96,7 +96,7 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
         mGoogleSignInClient = GoogleSignIn.getClient(getActivity(), gso);
 
         mAuth = FirebaseAuth.getInstance();
-        mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("users");
+        mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
         // Enable offline capability
         mDatabaseUsers.keepSynced(true);
 
@@ -208,7 +208,7 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
         if (requestCode == RC_SIGN_IN_CODE){
             // The task returned from this call is always completed so we won't need to call a listener
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            mProgressDialog.setMessage("Starting Sign in");
+            mProgressDialog.setMessage("Starting sign in");
             mProgressDialog.show();
             try {
                 //Google Sign in is successful authenticate with fire base + update the UI appropriately
@@ -218,7 +218,7 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
                 //Google Sign in failed + update the UI appropriately
                 Log.w(TAG, "Google sign in failed: ", e);
                 mProgressDialog.dismiss();
-                showSnackBar(rootView.findViewById(R.id.cl_snack_bar), "Sign in Failed", Snackbar.LENGTH_INDEFINITE);
+                showSnackBar(rootView.findViewById(R.id.cl_snack_bar), e.getMessage(), Snackbar.LENGTH_INDEFINITE);
                 updateUi(null);
             }
         }

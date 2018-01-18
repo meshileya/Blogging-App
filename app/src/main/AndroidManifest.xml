@@ -27,7 +27,12 @@
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".SinglePostActivity"></activity>
+        <activity android:name=".SinglePostActivity">
+            <!--[PARENT ACTIVITY] means the parent activity of [SinglePostActivity]-->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.benjamin.learnblog.AllPostActivity" />
+        </activity>
     </application>
 
 </manifest>

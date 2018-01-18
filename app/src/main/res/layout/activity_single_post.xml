@@ -23,25 +23,41 @@
                 android:src="@drawable/placeholder"
                 tools:ignore="ContentDescription" />
 
+            <RelativeLayout
+                android:id="@+id/profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/iv_post_image">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/profile_image"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="8dp"
+                    android:src="@drawable/profile_image"/>
+
+                <TextView
+                    android:layout_toRightOf="@+id/profile_image"
+                    android:layout_toEndOf="@+id/profile_image"
+                    android:id="@+id/tv_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="10dp"
+                    android:text="by"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+
             <TextView
-                android:layout_below="@id/iv_post_image"
+                android:layout_below="@id/profile"
                 android:id="@+id/tv_post_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/post_title"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textAlignment="center"
-                android:padding="15dp"
-                android:layout_gravity="center"/>
-
-            <View
-                android:layout_below="@id/tv_post_title"
-                android:layout_width="match_parent"
-                android:layout_height="0.2dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:background="@color/primary_text"/>
+                android:padding="8dp"/>
 
             <TextView
                 android:layout_below="@id/tv_post_title"
@@ -63,7 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:text="Remove Post"
-        android:background="@color/colorAccent"
+        android:background="#FF5C5C"
         android:textColor="@color/white"
         android:textSize="18sp"
         android:visibility="invisible"/>

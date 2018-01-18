@@ -177,12 +177,16 @@ public class NewPostActivity extends AppCompatActivity implements View.OnClickLi
                             newPost.child("content").setValue(postBody);
                             newPost.child("uid").setValue(mCurrentUser.getUid());
 
+                            newPost.child("ownerDp").setValue(dataSnapshot.child("propics").getValue());
                             newPost.child("username").setValue(dataSnapshot.child("name").getValue())
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()){
-                                                startActivity(new Intent(NewPostActivity.this, AllPostActivity.class));
+                                                Intent toAllPost = new Intent(NewPostActivity.this, AllPostActivity.class);
+                                                toAllPost.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                startActivity(toAllPost);
+                                                finish();
                                             }
                                         }
                                     });

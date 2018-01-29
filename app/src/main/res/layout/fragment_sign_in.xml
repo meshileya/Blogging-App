@@ -62,6 +62,20 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="30dp"
                 android:layout_marginRight="30dp"/>
+
+            <Button
+                android:id="@+id/facebook_auth"
+                android:layout_width="@dimen/contents_size"
+                android:layout_height="50dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="30dp"
+                android:textColor="@color/white"
+                android:drawableLeft="@drawable/facebook_icon"
+                android:text="Join with Facebook"
+                android:onClick="facebookAuth"
+                android:textAllCaps="false"
+                android:background="@drawable/customized_facebook_button"
+                />
         </LinearLayout>
 
     </android.support.design.widget.CoordinatorLayout>

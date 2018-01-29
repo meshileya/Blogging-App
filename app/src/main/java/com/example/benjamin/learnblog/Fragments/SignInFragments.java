@@ -14,11 +14,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.benjamin.learnblog.AllPostActivity;
 import com.example.benjamin.learnblog.BaseActivity;
 import com.example.benjamin.learnblog.R;
 import com.example.benjamin.learnblog.SetupAccount;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -39,6 +46,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Arrays;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -57,6 +66,7 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
     private EditText mEmail, mPassword;
     private Button normSignInButton;
     View rootView;
+    private CallbackManager callbackManager;
 
     public SignInFragments() {
         // Required empty public constructor
@@ -67,6 +77,7 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        initData();
         rootView = inflater.inflate(R.layout.fragment_sign_in, container, false);
 
         //[Referencing Views]*Starts*
@@ -102,6 +113,34 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
 
         return rootView;
     }
+    public void initData(){
+        FacebookSdk.sdkInitialize(getActivity().getApplicationContext());
+
+
+        callbackManager = CallbackManager.Factory.create();
+        LoginManager.getInstance().registerCallback(callbackManager,
+
+                new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+                        onLogin();
+                        Log.d(TAG, "User ID: " +
+                                loginResult.getAccessToken().getUserId() + "\n" +
+                                "Auth Token: " + loginResult.getAccessToken().getToken());
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        Toast.makeText(getActivity(), "Login Cancel", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onError(FacebookException exception) {
+                        exception.printStackTrace();
+                        Toast.makeText(getActivity(), exception.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
 
     @Override
     public void onStart() {
@@ -130,6 +169,10 @@ public class SignInFragments extends BaseActivity.BaseFragment implements View.O
                 checkStartLogin();
                 break;
         }
+    }
+
+    public void facebookAuth(View view) {
+        LoginManager.getInstance().logInWithReadPermissions(getActivity(), Arrays.asList("public_profile", "user_friends"));
     }
 
     private void checkStartLogin() {
